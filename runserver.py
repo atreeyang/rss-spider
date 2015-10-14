@@ -52,6 +52,7 @@ def readRss(urls):
     posts = client.get_default_database().readings
     for url in urls:
         items = feedparser.parse(url['url'])
+        log(url['subcat'])
         try:
             for entry in items.entries:
                 if (posts.find_one({"link":entry.link})):
