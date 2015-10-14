@@ -1,16 +1,10 @@
 # coding: utf-8
 
-from flask_rest_service import app
 import urllib2
 import StringIO
 import gzip
 import json
-from flask import request, abort
-from flask.ext import restful
-from flask.ext.restful import reqparse
-from flask_rest_service import app, api, mongo
 from bson.objectid import ObjectId
-from flask import Flask, render_template
 from pymongo import MongoClient
 import feedparser
 from time import mktime, strftime
@@ -49,7 +43,7 @@ urls = [{'cat':'DailyFx', 'subcat':'市场回音', 'url':'http://rss.DailyFx.com
         {'cat':'DailyFx', 'subcat':'股市原油', 'url':'http://rss.DailyFx.com.hk/stocks_oil_chg_sc.xml'},
         {'cat':'DailyFx', 'subcat':'机构报告', 'url':'http://rss.DailyFx.com.hk/institution_chg_sc.xml'}]
 
-client = MongoClient(app.config['MONGO_URI'])
+client = MongoClient(MONGO_URL)
 
 def log(msg):
     logging.warning(msg)
