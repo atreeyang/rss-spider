@@ -47,7 +47,9 @@ urls = [{'cat':'DailyFx', 'subcat':'市场回音', 'url':'http://rss.DailyFx.com
 
 client = MongoClient(MONGO_URL)
 lastLogTime = time.time()
+currentThreadName = 1
 def log(msg):
+    global lastLogTime
     lastLogTime = time.time()
     logging.warning(msg)
 
@@ -80,14 +82,18 @@ def readRss(urls):
     posts.create_index([("cat", -1)])
     posts.create_index([("link", 1)])
 
-def refreshRss():
+def refreshRss(name):
+    global currentThreadName
     while True:
         try:
-            log("begin refresh rss")
+            log(str(name) + "begin refresh rss")
             rssZeroHedge()
-            log("finish zeroHedge")
+            log(str(name) + "finish zeroHedge")
             readRss(urls)
-            log("finish refresh rss")
+            log(str(name) + "finish refresh rss")
+            if(name != currentThreadName):
+                logging.warning(str(name) + "!!!!finish the thread due to new thread was created")
+                break
             time.sleep(10)
         except Exception as e:
             log('!!!==============Exception during LogThread.run')
@@ -135,16 +141,19 @@ def rssZeroHedge():
         post_id = posts.insert(post)
         log(post_id)
 
-t = threading.Thread(target=refreshRss)
+t = threading.Thread(target=refreshRss, args=(currentThreadName,))
 t.start()
 
 while True:
+    global lastLogTime
+    global currentThreadName
     current = time.time()
     timespan = current - lastLogTime
     if ((timespan > 300) or (not t.is_alive())):
-        logging.warning("hanged about 5mins!!! start new thread!" + str(threading.activeCount()))
+        logging.warning(str(currentThreadName) + "hanged about 5mins!!! start new thread!" + str(threading.activeCount()))
         lastLogTime = time.time()
-        t = threading.Thread(target=refreshRss)
+        currentThreadName = currentThreadName + 1
+        t = threading.Thread(target=refreshRss, args=(currentThreadName,))
         t.start()
     logging.warning("check the crawler " + str(timespan))
     time.sleep(15);
