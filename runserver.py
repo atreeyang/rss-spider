@@ -140,7 +140,7 @@ t.start()
 
 while True:
     current = time.time()
-    if (current - lastLogTime > 300 or !t.is_alive()):
+    if ((current - lastLogTime > 300) or (not t.is_alive())):
         logging.warning("hanged about 5mins!!! start new thread!")
         t = threading.Thread(target=refreshRss)
         t.start()
