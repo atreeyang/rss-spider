@@ -140,8 +140,9 @@ t.start()
 
 while True:
     current = time.time()
-    if (current - lastLogTime > 300 || !t.is_alive()):
+    if (current - lastLogTime > 300 or !t.is_alive()):
         logging.warning("hanged about 5mins!!! start new thread!")
         t = threading.Thread(target=refreshRss)
         t.start()
+    logging.warning("check the crawler")
     time.sleep(15);
