@@ -15,6 +15,8 @@ import threading
 import sys
 import requests
 import logging
+import threading
+
 
 MONGO_URL = os.environ.get('MONGO_URL')
 if not MONGO_URL:
@@ -44,8 +46,9 @@ urls = [{'cat':'DailyFx', 'subcat':'市场回音', 'url':'http://rss.DailyFx.com
         {'cat':'DailyFx', 'subcat':'机构报告', 'url':'http://rss.DailyFx.com.hk/institution_chg_sc.xml'}]
 
 client = MongoClient(MONGO_URL)
-
+lastLogTime = time.time()
 def log(msg):
+    lastLogTime = time.time()
     logging.warning(msg)
 
 def readRss(urls):
@@ -132,4 +135,13 @@ def rssZeroHedge():
         post_id = posts.insert(post)
         log(post_id)
 
-refreshRss()
+t = threading.Thread(target=refreshRss)
+t.start()
+
+while True:
+    current = time.time()
+    if (current - lastLogTime > 300 || !t.is_alive()):
+        logging.warning("hanged about 5mins!!! start new thread!")
+        t = threading.Thread(target=refreshRss)
+        t.start()
+    time.sleep(15);
