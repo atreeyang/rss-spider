@@ -90,7 +90,7 @@ def refreshRss():
             log("finish refresh rss")
             time.sleep(10)
         except Exception as e:
-            logging.exception('!!!==============Exception during LogThread.run')
+            log('!!!==============Exception during LogThread.run')
             logging.exception(e)
 
 def readHtml(link):
@@ -140,9 +140,11 @@ t.start()
 
 while True:
     current = time.time()
-    if ((current - lastLogTime > 300) or (not t.is_alive())):
-        logging.warning("hanged about 5mins!!! start new thread!")
+    timespan = current - lastLogTime
+    if ((timespan > 300) or (not t.is_alive())):
+        logging.warning("hanged about 5mins!!! start new thread!" + str(threading.activeCount()))
+        lastLogTime = time.time()
         t = threading.Thread(target=refreshRss)
         t.start()
-    logging.warning("check the crawler")
+    logging.warning("check the crawler " + str(timespan))
     time.sleep(15);
