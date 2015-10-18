@@ -17,7 +17,6 @@ import requests
 import logging
 import threading
 
-
 MONGO_URL = os.environ.get('MONGO_URL')
 if not MONGO_URL:
     MONGO_URL = "mongodb://localhost:27017/rss"
@@ -141,19 +140,41 @@ def rssZeroHedge():
         post_id = posts.insert(post)
         log(post_id)
 
-t = threading.Thread(target=refreshRss, args=(currentThreadName,))
-t.start()
+def main(conn):
+    t = threading.Thread(target=refreshRss, args=(1,))
+    t.start()
+
+    while True:
+        global lastLogTime
+        global currentThreadName
+        current = time.time()
+        timespan = current - lastLogTime
+        if ((timespan > 300) or (not t.is_alive())):
+            logging.warning(str(currentThreadName) + "hanged about 5mins!!! start new process!" + str(threading.activeCount()))
+            lastLogTime = time.time()
+            currentThreadName = currentThreadName + 1
+            conn.send(0)
+#            t = threading.Thread(target=refreshRss, args=(currentThreadName,))
+#            t.start()
+        logging.warning("check the crawler " + str(timespan))
+        conn.send(timespan)
+        time.sleep(15);
+
+from multiprocessing import Process, Pipe
+import multiprocessing
+parent_conn, child_conn = Pipe()
+p = Process(target=main, args=(child_conn,))
+p.start()
 
 while True:
-    global lastLogTime
-    global currentThreadName
-    current = time.time()
-    timespan = current - lastLogTime
-    if ((timespan > 300) or (not t.is_alive())):
-        logging.warning(str(currentThreadName) + "hanged about 5mins!!! start new thread!" + str(threading.activeCount()))
-        lastLogTime = time.time()
-        currentThreadName = currentThreadName + 1
-        t = threading.Thread(target=refreshRss, args=(currentThreadName,))
-        t.start()
-    logging.warning("check the crawler " + str(timespan))
-    time.sleep(15);
+    a = parent_conn.recv()
+    if(0 == a):
+        p.terminate()
+        parent_conn.close()
+        parent_conn, child_conn = Pipe()
+        p = Process(target=main, args=(child_conn,))
+        p.start()
+    print(str(a) + "thread:" + str(multiprocessing.active_children()))
+    time.sleep(1)
+
+print("end all process")
