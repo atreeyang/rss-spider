@@ -174,7 +174,7 @@ while True:
         parent_conn, child_conn = Pipe()
         p = Process(target=main, args=(child_conn,))
         p.start()
-    loging.warning(str(a) + "thread:" + str(multiprocessing.active_children()))
+    logging.warning(str(a) + "process:" + str(multiprocessing.active_children()))
     time.sleep(1)
 
 print("end all process")
