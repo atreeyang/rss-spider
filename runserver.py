@@ -175,6 +175,6 @@ while True:
         p = Process(target=main, args=(child_conn,))
         p.start()
     logging.warning(str(a) + "process:" + str(multiprocessing.active_children()))
-    time.sleep(1)
+    time.sleep(5)
 
 print("end all process")
