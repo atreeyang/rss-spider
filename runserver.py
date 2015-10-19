@@ -143,7 +143,7 @@ def rssZeroHedge():
 def main(conn):
     t = threading.Thread(target=refreshRss, args=(1,))
     t.start()
-
+    lastLogTime = time.time()
     while True:
         global lastLogTime
         global currentThreadName
